@@ -1,17 +1,11 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI
+from db import init_db
+from auth import router as auth_router
+from chat import router as chat_router
 
 app = FastAPI()
-clients = []
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    clients.append(websocket)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            for client in clients:
-                if client != websocket:
-                    await client.send_text(data)
-    except WebSocketDisconnect:
-        clients.remove(websocket)
+init_db()
+
+app.include_router(auth_router)
+app.include_router(chat_router)
