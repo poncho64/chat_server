@@ -46,17 +46,19 @@ class LoginWindow(QWidget):
             self.avatar_path = file
             self.avatar_label.setText(f"Avatar: {file.split('/')[-1]}")
 
+
     def login(self):
         data = {"username": self.username.text(), "password": self.password.text()}
         try:
             r = requests.post(f"{BACKEND_URL}/login", data=data)
             if r.status_code == 200:
-                self.result = {"username": self.username.text(), "avatar": r.json().get("avatar")}
+                self.result = {"username": self.username.text()}
                 self.close()
             else:
-                self.avatar_label.setText("Login fallido")
+                # Mostrar error en la interfaz
+                self.password.setText("")
         except Exception as e:
-            self.avatar_label.setText(f"Error: {e}")
+            self.password.setText("")
 
     def register(self):
         files = {}
@@ -66,19 +68,20 @@ class LoginWindow(QWidget):
         try:
             r = requests.post(f"{BACKEND_URL}/register", data=data, files=files if files else None)
             if r.status_code == 200:
-                self.avatar_label.setText("Registro exitoso. Ahora inicia sesión.")
+                # Registro exitoso
+                pass
             else:
-                self.avatar_label.setText("Registro fallido")
+                # Registro fallido
+                self.password.setText("")
         except Exception as e:
-            self.avatar_label.setText(f"Error: {e}")
+            self.password.setText("")
 
 class ChatWindow(QWidget):
-    def __init__(self, username, avatar):
+    def __init__(self, username):
         super().__init__()
         self.setWindowTitle(f"Chat - {username}")
         self.setGeometry(200, 200, 500, 400)
         self.username = username
-        self.avatar = avatar
         layout = QVBoxLayout()
         self.chat_area = QTextEdit()
         self.chat_area.setReadOnly(True)
@@ -125,7 +128,7 @@ def main():
     login.show()
     app.exec_()
     if login.result:
-        chat = ChatWindow(login.result["username"], login.result["avatar"])
+        chat = ChatWindow(login.result["username"])
         chat.show()
         app.exec_()
 
